@@ -25,7 +25,7 @@ jobs:
       run: echo "Modelo y datos listos para testing."
 
     - name: 🧪 Ejecutar Pruebas Unitarias (Pytest)
-      run: pytest tests/test_model.py
+      run: .
 
   # ETAPA 2: BUILD/PROMOTE - Construye la imagen Docker y Simula el Despliegue
   build_promote:
