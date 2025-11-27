@@ -21,19 +21,18 @@ jobs:
     - name: 📦 Instalar Dependencias
       run: pip install -r requirements.txt
       
-    # Se simula que el modelo existe en la raíz para que el test lo encuentre
-    # En un entorno real, aquí se descargaría el modelo real del bucket.
     - name: ⚙️ Preparar Modelo y Datos de Prueba (Simulación)
-      # Nota: En el entorno local, se simula que el modelo existe
-      # Para GitHub Actions, se debe asegurar que el modelo está disponible (p. ej. un checkout LFS o descarga)
-      # Para esta simulación de rúbrica, asumimos que el modelo es accesible para las pruebas.
-      # Se asume que test_model.py genera los datos de prueba simulados si no existen.
       run: |
         # Asumiendo que mobilenetv2-7.onnx está disponible en el runner (por LFS o un paso anterior real)
         echo "Modelo y datos listos para testing."
 
     - name: 🧪 Ejecutar Pruebas Unitarias (Pytest)
-      run: .
+      # CORRECCIÓN CLAVE: Esto soluciona el error de 'ModuleNotFoundError'
+      # y el error de 'filename argument required' al usar '.' incorrectamente.
+      run: |
+        # Añade el directorio actual al path de Python para que pueda encontrar 'app.download_model'
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
+        pytest tests/test_model.py
 
   # ETAPA 2: BUILD/PROMOTE - Construye la imagen Docker
   build_promote:
