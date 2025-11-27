@@ -23,14 +23,14 @@ jobs:
       
     - name: ⚙️ Preparar Modelo y Datos de Prueba (Simulación)
       run: |
-        # Asumiendo que mobilenetv2-7.onnx está disponible en el runner (por LFS o un paso anterior real)
+        # Asumiendo que mobilenetv2-7.onnx está disponible en el runner
         echo "Modelo y datos listos para testing."
 
     - name: 🧪 Ejecutar Pruebas Unitarias (Pytest)
-      # CORRECCIÓN CLAVE: Esto soluciona el error de 'ModuleNotFoundError'
-      # y el error de 'filename argument required' al usar '.' incorrectamente.
+      # CORRECCIÓN DEFINITIVA: Esto soluciona el error de shell (run: .)
+      # y el error de importación (ModuleNotFoundError)
       run: |
-        # Añade el directorio actual al path de Python para que pueda encontrar 'app.download_model'
+        # Añade el directorio actual al path de Python para que pueda encontrar el módulo 'app'
         export PYTHONPATH=$PYTHONPATH:$(pwd)
         pytest tests/test_model.py
 
@@ -52,9 +52,6 @@ jobs:
         echo "Imagen Docker construida con éxito: $DOCKER_IMAGE_TAG"
         
     - name: 🚀 Simular Despliegue (Simulación de Actualización de Endpoint)
-      # En un entorno real (ECS/EKS/Cloud Run), este paso
-      # haría un push de la imagen y actualizaría el servicio 'dev'
-      # para usar la nueva imagen, actualizando el endpoint.
       run: |
         echo "Simulación de despliegue en el endpoint DEV completada."
         echo "El contenedor final usaría el comando: docker run -d -e ENVIRONMENT=dev -p 8080:8080 $DOCKER_IMAGE_TAG"
