@@ -1,0 +1,14 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Logs de la aplicación (predicciones)
+predicciones_dev.txt
+predicciones_prod.txt
+
+# Docker
+.dockerignore
+
+# Entornos virtuales
+venv/
+.venv/

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clasificación MobileNetV2 ONNX</title>
+    <style>
+        /* Estilos CSS básicos para centrar y organizar */
+        body { font-family: sans-serif; text-align: center; margin: 50px; background-color: #f4f4f9; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px;}
+        #output { margin-top: 25px; padding: 15px; border: 1px solid #c8d9e6; border-radius: 6px; background-color: #ecf0f1; text-align: left; }
+        img { max-width: 100%; height: auto; border-radius: 4px; margin-top: 15px; border: 1px solid #ddd; }
+        input[type="file"] { margin-bottom: 15px; }
+        button { 
+            background-color: #3498db; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+        #output p { margin: 5px 0; }
+        #output span { font-weight: bold; color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Clasificador MobileNetV2 (ONNX)</h1>
+    <p>Suba una imagen (JPG/PNG) para que el modelo la clasifique.</p>
+
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="uploadImage()">Clasificar Imagen</button>
+    
+    <div id="imagePreviewContainer">
+        <img id="imagePreview" style="display:none; max-height: 200px;" alt="Vista previa de la imagen">
+    </div>
+
+    <div id="output">
+        Esperando carga de imagen...
+    </div>
+</div>
+
+<script>
+    const imageInput = document.getElementById('imageInput');
+    const outputDiv = document.getElementById('output');
+    const imagePreview = document.getElementById('imagePreview');
+
+    // Muestra la vista previa de la imagen seleccionada
+    imageInput.addEventListener('change', function() {
+        const file = imageInput.files[0];
+        if (file) {
+            imagePreview.src = URL.createObjectURL(file);
+            imagePreview.style.display = 'block';
+            outputDiv.innerHTML = 'Imagen lista para clasificar.';
+        }
+    });
+
+    async function uploadImage() {
+        const file = imageInput.files[0];
+        if (!file) {
+            outputDiv.innerHTML = 'Por favor, seleccione un archivo de imagen primero.';
+            return;
+        }
+
+        outputDiv.innerHTML = 'Cargando y clasificando... Esto puede tomar unos segundos.';
+
+        // 1. Crear el objeto FormData para enviar el archivo
+        const formData = new FormData();
+        // El nombre 'file' debe coincidir con el campo esperado por Flask: request.files['file']
+        formData.append('file', file); 
+
+        // 2. Enviar la solicitud a la API
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData 
+            });
+
+            // 3. Procesar la respuesta
+            const result = await response.json();
+
+            if (response.ok) {
+                // Éxito: Mostrar los resultados
+                outputDiv.innerHTML = `
+                    <h3>✅ Predicción Exitosa</h3>
+                    <p><strong>Clase Predicha:</strong> <span>${result.predicted_label}</span></p>
+                    <p><strong>Índice de Clase (Raw):</strong> ${result.prediction_index}</p>
+                    <p><strong>Confianza (Raw Logit):</strong> ${result.confidence}</p>
+                `;
+            } else {
+                // Error de la API (por ejemplo, si la imagen era un archivo corrupto)
+                outputDiv.innerHTML = `
+                    <h3>❌ Error de Clasificación</h3>
+                    <p>Error del servidor: ${result.error || response.statusText}</p>
+                `;
+            }
+        } catch (error) {
+            // Error de conexión (contenedor apagado)
+            outputDiv.innerHTML = `
+                <h3>❌ Error de Conexión</h3>
+                <p>No se pudo conectar con la API. Asegúrese de que el contenedor Docker esté corriendo en el puerto 8080.</p>
+                <p>Detalle: ${error.message}</p>
+            `;
+        }
+    }
+</script>
+<footer>
+        <p style="margin-top: 30px; font-size: 0.85em; color: #7f8c8d;">
+            Actividad de Despliegue MLOps realizada por: Johan Sebastian Bonilla y Josué Cobaleda
+        </p>
+    </footer>
+
+</div> <script>
+// ... (Su código JavaScript va aquí) ...
+</script>
+
+</body>
+</html>

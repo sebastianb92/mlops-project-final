@@ -1,0 +1,49 @@
+name: CI/CD Pipeline - PRODUCTION
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  # ETAPA 1: TEST - Ejecuta las pruebas unitarias
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: ⬇️ Checkout del Código
+      uses: actions/checkout@v4
+
+    - name: 🐍 Configurar Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: 📦 Instalar Dependencias
+      run: pip install -r requirements.txt
+      
+    - name: ⚙️ Preparar Modelo y Datos de Prueba (Simulación)
+      run: echo "Modelo y datos listos para testing."
+
+    - name: 🧪 Ejecutar Pruebas Unitarias (Pytest)
+      run: pytest tests/test_model.py
+
+  # ETAPA 2: BUILD/PROMOTE - Construye la imagen Docker y Simula el Despliegue
+  build_promote:
+    needs: test # Solo se ejecuta si la etapa 'test' fue exitosa
+    runs-on: ubuntu-latest
+    steps:
+    - name: ⬇️ Checkout del Código
+      uses: actions/checkout@v4
+
+    - name: 🏗️ Construir Imagen Docker
+      # Usamos una etiqueta final para la rama prod
+      run: |
+        DOCKER_IMAGE_TAG=mlops-prod:latest
+        docker build . -t $DOCKER_IMAGE_TAG
+        echo "Imagen Docker construida con éxito: $DOCKER_IMAGE_TAG"
+        
+    - name: 🚀 Simular Despliegue (Simulación de Actualización de Endpoint)
+      # En el ambiente PROD, este paso sería la actualización final del servicio.
+      run: |
+        echo "Simulación de despliegue en el endpoint PROD completada."
+        echo "El contenedor final usaría el comando: docker run -d -e ENVIRONMENT=prod -p 8080:8080 $DOCKER_IMAGE_TAG"
